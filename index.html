@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseCRUD - Modern Team & Records Manager</title>
+  <meta name="description" content="A modern, high-performance CRUD application with clean human styling, real-time filtering, analytics, and local storage persistence.">
+  
+  <!-- Favicon Links for Browser Tab -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Phosphor Icons for ultra-crisp modern UI icons -->
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="light">
+  <!-- Background Glow & Grid Canvas -->
+  <div class="bg-decoration">
+    <div class="glow-orb glow-1"></div>
+    <div class="glow-orb glow-2"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo" title="PulseCRUD Personnel Hub">
+          <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true" fill="none">
+            <!-- Left Person -->
+            <circle cx="20" cy="27" r="5.5" fill="#ffffff" opacity="0.85"/>
+            <path d="M10 46 C10 39 16 36 22 36 C24.5 36 26.8 36.8 28.5 38.2 C26.7 40.2 25.5 42.8 25.5 46 Z" fill="#ffffff" opacity="0.85"/>
+
+            <!-- Right Person -->
+            <circle cx="44" cy="27" r="5.5" fill="#ffffff" opacity="0.85"/>
+            <path d="M54 46 C54 39 48 36 42 36 C39.5 36 37.2 36.8 35.5 38.2 C37.3 40.2 38.5 42.8 38.5 46 Z" fill="#ffffff" opacity="0.85"/>
+
+            <!-- Center Person -->
+            <circle cx="32" cy="22" r="7.5" fill="#ffffff"/>
+            <path d="M19 46 C19 37.5 25 34 32 34 C39 34 45 37.5 45 46 Z" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">Pulse<span class="gradient-text">CRUD</span></div>
+          <span class="brand-badge">Personnel Hub</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="btn btn-icon" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+          <i class="ph ph-moon theme-icon-moon"></i>
+          <i class="ph ph-sun theme-icon-sun"></i>
+        </button>
+
+        <button id="openCreateModalBtn" class="btn btn-primary">
+          <i class="ph ph-plus-circle"></i>
+          <span>Add New Member</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats & Analytics Bar -->
+    <section class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-icon-wrapper stat-total">
+          <i class="ph ph-users"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Total Records</span>
+          <h2 class="stat-value" id="statTotal">0</h2>
+        </div>
+        <div class="stat-trend trend-positive">
+          <i class="ph ph-trend-up"></i> Active DB
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper stat-active">
+          <i class="ph ph-check-circle"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Active Members</span>
+          <h2 class="stat-value" id="statActive">0</h2>
+        </div>
+        <div class="stat-badge badge-emerald" id="statActivePct">0%</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper stat-pending">
+          <i class="ph ph-clock-countdown"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">On Leave / Pending</span>
+          <h2 class="stat-value" id="statPending">0</h2>
+        </div>
+        <span class="stat-hint">In queue</span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper stat-departments">
+          <i class="ph ph-buildings"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Departments</span>
+          <h2 class="stat-value" id="statDepartments">0</h2>
+        </div>
+        <span class="stat-hint">Active teams</span>
+      </div>
+    </section>
+
+    <!-- Filter, Search & Controls Section -->
+    <section class="controls-panel">
+      <div class="search-box">
+        <i class="ph ph-magnifying-glass search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Search by name, email, department, role..." autocomplete="off">
+        <button id="clearSearchBtn" class="clear-btn" title="Clear search" style="display: none;">
+          <i class="ph ph-x-circle"></i>
+        </button>
+      </div>
+
+      <div class="filters-group">
+        <!-- Department Filter -->
+        <div class="select-wrapper">
+          <i class="ph ph-briefcase select-icon"></i>
+          <select id="departmentFilter">
+            <option value="all">All Departments</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Design">Design</option>
+            <option value="Product">Product</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Operations">Operations</option>
+            <option value="Finance">Finance</option>
+          </select>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="select-wrapper">
+          <i class="ph ph-funnel select-icon"></i>
+          <select id="statusFilter">
+            <option value="all">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="select-wrapper">
+          <i class="ph ph-arrows-down-up select-icon"></i>
+          <select id="sortBySelect">
+            <option value="newest">Sort: Newest First</option>
+            <option value="oldest">Sort: Oldest First</option>
+            <option value="name-asc">Sort: Name (A - Z)</option>
+            <option value="name-desc">Sort: Name (Z - A)</option>
+            <option value="salary-desc">Sort: Salary (High - Low)</option>
+          </select>
+        </div>
+
+        <!-- Layout View Toggle (Table vs Cards) -->
+        <div class="view-toggle">
+          <button id="tableViewBtn" class="toggle-btn active" title="Table View" aria-label="Table View">
+            <i class="ph ph-table"></i>
+          </button>
+          <button id="cardsViewBtn" class="toggle-btn" title="Grid Cards View" aria-label="Grid Cards View">
+            <i class="ph ph-squares-four"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Meta / Batch Action Bar -->
+    <div class="results-bar">
+      <div class="results-count" id="resultsCount">
+        Showing <strong>0</strong> records
+      </div>
+    </div>
+
+    <!-- Main Data Presentation Area -->
+    <main class="data-viewport">
+      <!-- Table View Container -->
+      <div class="table-container" id="tableContainer">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th class="th-user">Member</th>
+              <th class="th-role">Role & Department</th>
+              <th class="th-contact">Contact</th>
+              <th class="th-status">Status</th>
+              <th class="th-joined">Joined Date</th>
+              <th class="th-actions text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Dynamic Rows injected via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Grid Cards View Container -->
+      <div class="cards-grid" id="cardsContainer" style="display: none;">
+        <!-- Dynamic Cards injected via JS -->
+      </div>
+
+      <!-- Empty State View -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-illustration">
+          <i class="ph-duotone ph-user-focus"></i>
+        </div>
+        <h3 class="empty-title">No records matched your criteria</h3>
+        <p class="empty-desc">Try clearing your search query, adjusting filter parameters, or create a brand new team member.</p>
+        <div class="empty-actions">
+          <button id="emptyClearFiltersBtn" class="btn btn-secondary">
+            <i class="ph ph-funnel-x"></i> Clear Filters
+          </button>
+          <button id="emptyAddBtn" class="btn btn-primary">
+            <i class="ph ph-plus"></i> Add New Member
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p>Built with pure <strong>HTML5</strong>, <strong>Modern CSS3</strong>, and <strong>Vanilla JavaScript</strong>.</p>
+        <span class="footer-badge"><i class="ph-fill ph-shield-check"></i> LocalStorage Persistent</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal: Create / Edit Record -->
+  <div class="modal-backdrop" id="recordModal" aria-hidden="true" role="dialog">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <div class="modal-badge-icon" id="modalIcon">
+            <i class="ph ph-user-plus"></i>
+          </div>
+          <div>
+            <h2 class="modal-title" id="modalTitle">Add New Member</h2>
+            <p class="modal-subtitle" id="modalSubtitle">Fill out the member's profile details below.</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="closeModalBtn" aria-label="Close modal">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+
+      <form id="recordForm" novalidate>
+        <input type="hidden" id="recordId">
+
+        <div class="form-grid">
+          <!-- Full Name -->
+          <div class="form-group col-span-2">
+            <label for="fullName">Full Name <span class="required">*</span></label>
+            <div class="input-icon-group">
+              <i class="ph ph-user input-icon"></i>
+              <input type="text" id="fullName" placeholder="e.g. Sarah Jenkins" required>
+            </div>
+            <span class="field-error" id="nameError"></span>
+          </div>
+
+          <!-- Email Address -->
+          <div class="form-group">
+            <label for="email">Work Email <span class="required">*</span></label>
+            <div class="input-icon-group">
+              <i class="ph ph-envelope-simple input-icon"></i>
+              <input type="email" id="email" placeholder="sarah.j@company.com" required>
+            </div>
+            <span class="field-error" id="emailError"></span>
+          </div>
+
+          <!-- Phone Number with Country Code & 10-digit limit -->
+          <div class="form-group">
+            <div class="label-with-hint">
+              <label for="phone">Phone Number <span class="required">*</span></label>
+              <span class="phone-counter" id="phoneCounter">0/10 digits</span>
+            </div>
+            <div class="phone-input-group">
+              <div class="country-select-wrapper">
+                <select id="countryCode" title="Country Code" aria-label="Country Code">
+                  <option value="+91" selected>🇮🇳 +91</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+92">🇵🇰 +92</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+81">🇯🇵 +81</option>
+                  <option value="+65">🇸🇬 +65</option>
+                  <option value="+966">🇸🇦 +966</option>
+                  <option value="+880">🇧🇩 +880</option>
+                  <option value="+977">🇳🇵 +977</option>
+                </select>
+              </div>
+              <div class="phone-field-wrapper">
+                <i class="ph ph-phone input-icon"></i>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  placeholder="9876543210" 
+                  maxlength="10" 
+                  inputmode="numeric" 
+                  pattern="[0-9]{10}" 
+                  autocomplete="tel-national" 
+                  required
+                >
+              </div>
+            </div>
+            <span class="field-error" id="phoneError"></span>
+          </div>
+
+          <!-- Department -->
+          <div class="form-group">
+            <label for="department">Department <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <i class="ph ph-buildings select-icon"></i>
+              <select id="department" required>
+                <option value="" disabled selected>Select Department</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Design">Design</option>
+                <option value="Product">Product</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Operations">Operations</option>
+                <option value="Finance">Finance</option>
+              </select>
+            </div>
+            <span class="field-error" id="departmentError"></span>
+          </div>
+
+          <!-- Role Title -->
+          <div class="form-group">
+            <label for="role">Job Title / Role <span class="required">*</span></label>
+            <div class="input-icon-group">
+              <i class="ph ph-identification-badge input-icon"></i>
+              <input type="text" id="role" placeholder="e.g. Lead UI/UX Designer" required>
+            </div>
+            <span class="field-error" id="roleError"></span>
+          </div>
+
+          <!-- Employment Status -->
+          <div class="form-group">
+            <label for="status">Employment Status</label>
+            <div class="select-wrapper">
+              <i class="ph ph-traffic-signal select-icon"></i>
+              <select id="status">
+                <option value="Active">Active</option>
+                <option value="On Leave">On Leave</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Annual Salary -->
+          <div class="form-group">
+            <label for="salary">Annual Salary (USD)</label>
+            <div class="input-icon-group">
+              <i class="ph ph-currency-dollar input-icon"></i>
+              <input type="number" id="salary" placeholder="e.g. 95000" min="0" step="1000">
+            </div>
+            <span class="field-error" id="salaryError"></span>
+          </div>
+
+          <!-- Avatar Color Selection -->
+          <div class="form-group col-span-2">
+            <label>Avatar Color Theme</label>
+            <div class="color-picker-group" id="avatarColorPicker">
+              <button type="button" class="color-chip active" data-color="indigo" style="--chip-bg: linear-gradient(135deg, #6366f1, #4338ca);"></button>
+              <button type="button" class="color-chip" data-color="emerald" style="--chip-bg: linear-gradient(135deg, #10b981, #047857);"></button>
+              <button type="button" class="color-chip" data-color="violet" style="--chip-bg: linear-gradient(135deg, #8b5cf6, #6d28d9);"></button>
+              <button type="button" class="color-chip" data-color="rose" style="--chip-bg: linear-gradient(135deg, #f43f5e, #be123c);"></button>
+              <button type="button" class="color-chip" data-color="amber" style="--chip-bg: linear-gradient(135deg, #f59e0b, #b45309);"></button>
+              <button type="button" class="color-chip" data-color="cyan" style="--chip-bg: linear-gradient(135deg, #06b6d4, #0e7490);"></button>
+            </div>
+          </div>
+
+          <!-- Skills / Tags -->
+          <div class="form-group col-span-2">
+            <label for="skillsInput">Skills (Comma separated)</label>
+            <div class="input-icon-group">
+              <i class="ph ph-tag input-icon"></i>
+              <input type="text" id="skillsInput" placeholder="e.g. React, TypeScript, Figma, System Design">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveRecordBtn">
+            <i class="ph ph-check-circle"></i>
+            <span id="saveBtnText">Save Record</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: View Details -->
+  <div class="modal-backdrop" id="viewModal" aria-hidden="true" role="dialog">
+    <div class="modal-window modal-view">
+      <div class="modal-header">
+        <h2 class="modal-title">Member Profile</h2>
+        <button class="modal-close-btn" id="closeViewModalBtn" aria-label="Close modal">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+      <div class="view-modal-content" id="viewModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="closeViewBtn">Close</button>
+        <button type="button" class="btn btn-primary" id="editFromViewBtn">
+          <i class="ph ph-pencil-simple"></i> Edit Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirm Delete Safety Dialog -->
+  <div class="modal-backdrop" id="deleteModal" aria-hidden="true" role="dialog">
+    <div class="modal-window modal-confirm">
+      <div class="confirm-icon-danger">
+        <i class="ph ph-trash-simple"></i>
+      </div>
+      <h3 class="confirm-title">Delete Team Member?</h3>
+      <p class="confirm-desc">Are you sure you want to permanently remove <strong id="deleteTargetName">this member</strong>? This action cannot be reversed.</p>
+      
+      <div class="modal-footer justify-center">
+        <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+          <i class="ph ph-trash"></i> Yes, Delete Member
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
